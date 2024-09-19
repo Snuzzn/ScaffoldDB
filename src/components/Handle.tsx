@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import {
   Handle as FlowHandle,
   Position,
@@ -10,9 +10,10 @@ import { useEffect } from "react";
 type HandleProps = {
   id: string;
   setIsHovered: (isHovered: boolean) => void;
+  isHovered: boolean;
 };
 
-const Handle = ({ id, setIsHovered }: HandleProps) => {
+const Handle = ({ id, setIsHovered, isHovered }: HandleProps) => {
   const connection = useConnection();
   const isTarget = connection.inProgress && connection.fromNode.id !== id;
   useHandleConnections({
@@ -43,6 +44,7 @@ const Handle = ({ id, setIsHovered }: HandleProps) => {
 
   return (
     <div>
+      <Cover />
       {!connection.inProgress && (
         <FullHandle
           position={Position.Right}
@@ -60,21 +62,45 @@ const Handle = ({ id, setIsHovered }: HandleProps) => {
           onMouseLeave={() => setIsHovered(false)}
         />
       )}
+      {isHovered && <Background />}
     </div>
   );
 };
 
 export default Handle;
 
+const sharedHandleStyles = css`
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
+  top: -20px;
+  left: -20px;
+`;
+
 const FullHandle = styled(FlowHandle)`
-  width: 100%;
-  height: 100%;
-  background: blue;
+  border-radius: 0;
+  transform: none;
+  opacity: 0;
+  ${sharedHandleStyles}
+`;
+
+const Background = styled.div`
+  ${sharedHandleStyles}
+  position: absolute;
+  opacity: 50%;
+  border-radius: 20px;
+  z-index: -1;
+  background: #1f1f20;
+  transition: opacity 200ms ease;
+  @starting-style {
+    opacity: 0;
+  }
+`;
+
+const Cover = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  border-radius: 0;
-  transform: none;
-  border: none;
-  opacity: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
 `;

@@ -2,7 +2,6 @@ import { useCallback, useState, useRef } from "react";
 import {
   ReactFlow,
   Background,
-  Controls,
   MiniMap,
   addEdge,
   useNodesState,
@@ -26,6 +25,7 @@ function App() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [nodeType, setNodeType] = useState<NodeType | null>(null);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -43,20 +43,28 @@ function App() {
     [setEdges],
   );
 
-  const editEdge = (_: React.MouseEvent, edge: Edge) => {
+  const handleEdgeClick = (_: React.MouseEvent, edge: Edge) => {
+    setActiveNodeId(null);
     if (!nodeType) {
       setSelectedEdge(edge);
     }
   };
 
   const resetPanels = () => {
+    setActiveNodeId(null);
     if (!nodeType) {
       setSelectedEdge(null);
     }
   };
 
+  const handleNodeClick = (_: React.MouseEvent, node: AppNode) => {
+    resetPanels();
+    setActiveNodeId(node.id);
+  };
+
   const reactFlow = useReactFlow();
   const handlePaneClick = (event: React.MouseEvent) => {
+    resetPanels();
     if (nodeType) {
       const position = reactFlow.screenToFlowPosition({
         x: event.clientX,
@@ -68,14 +76,17 @@ function App() {
           id: uuidv4(),
           type: nodeType,
           position: position,
-          data: { label: "text", attributes: [] },
+          data: {
+            label: "title",
+            attributes: [],
+          },
         };
       } else if (nodeType === "relationship" || nodeType === "inheritance") {
         newNode = {
           id: uuidv4(),
           type: nodeType,
           position: position,
-          data: { label: "text" },
+          data: { label: "title" },
         };
       } else {
         return;
@@ -92,6 +103,7 @@ function App() {
           edges={edges}
           setEdges={setEdges}
           selectedEdge={selectedEdge}
+          setSelectedEdge={setSelectedEdge}
         />
       )}
       <ToolsPanel nodeType={nodeType} setNodeType={setNodeType} />
@@ -103,7 +115,10 @@ function App() {
         }}
       >
         <ReactFlow
-          nodes={nodes}
+          nodes={nodes.map((node) => ({
+            ...node,
+            selected: node.id === activeNodeId,
+          }))}
           nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           edges={edges}
@@ -112,20 +127,18 @@ function App() {
           onConnect={onConnect}
           fitView
           colorMode={"dark"}
-          onEdgeClick={editEdge}
-          onNodeClick={resetPanels}
-          onNodeDrag={resetPanels}
+          onEdgeClick={handleEdgeClick}
+          onNodeClick={handleNodeClick}
+          onNodeDrag={handleNodeClick}
           onPaneClick={handlePaneClick}
           onEdgesDelete={resetPanels}
-          onMove={resetPanels}
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
           proOptions={proOptions}
         >
           <Background />
-          <MiniMap />
-          <Controls />
+          <MiniMap nodeBorderRadius={10} />
         </ReactFlow>
       </div>
     </>

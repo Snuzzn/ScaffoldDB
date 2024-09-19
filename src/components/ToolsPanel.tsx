@@ -1,9 +1,10 @@
 import styled from "styled-components";
-import EntityIcon from "../images/entity.svg";
-import RelationshipIcon from "../images/relationship.svg";
-import InheritanceIcon from "../images/inheritance.svg";
-import RelationIcon from "../images/relation.svg";
+import EntityIcon from "../images/tools/entity.svg";
+import RelationshipIcon from "../images/tools/relationship.svg";
+import InheritanceIcon from "../images/tools/inheritance.svg";
+import RelationIcon from "../images/tools/relation.svg";
 import { NodeType } from "../nodes/types";
+import { useEffect } from "react";
 
 type ToolsPanelProps = {
   nodeType: NodeType | null;
@@ -11,6 +12,24 @@ type ToolsPanelProps = {
 };
 
 const ToolsPanel = ({ nodeType, setNodeType }: ToolsPanelProps) => {
+  useEffect(() => {
+    const flowPane = document.querySelector(".react-flow__pane") as HTMLElement;
+
+    if (flowPane) {
+      if (nodeType !== null) {
+        flowPane.classList.add("pointer-cursor");
+      } else {
+        flowPane.classList.remove("pointer-cursor");
+      }
+    }
+
+    return () => {
+      if (flowPane) {
+        flowPane.classList.remove("pointer-cursor");
+      }
+    };
+  }, [nodeType]);
+
   return (
     <Wrapper>
       <Button
@@ -50,11 +69,13 @@ const Wrapper = styled.div`
   top: 0;
   bottom: 0;
   width: 60px;
-  height: 180px;
+  height: 220px;
   border-radius: 10px;
-  background: #1e1e1eff;
   color: white;
   margin: auto;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow:
     rgba(0, 0, 0, 0.25) 0px 14px 28px,
     rgba(0, 0, 0, 0.22) 0px 10px 10px;
@@ -70,7 +91,7 @@ const Button = styled.button<{ $isActive: boolean }>`
   cursor: pointer;
   background: ${({ $isActive }) => ($isActive ? "#3d57dcff" : "none")};
   color: ${({ $isActive }) => ($isActive ? "#3d57dcff" : "white")};
-  border-radius: 7px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -12,7 +12,7 @@ const SelectMenu = ({
   return (
     <Select.Root value={attributeType} onValueChange={setAttributeType}>
       <Trigger>
-        <Value placeholder="Select an option..." />
+        <Select.Value />
         <Select.Icon>
           <RxCaretDown size="0.6rem" />
         </Select.Icon>
@@ -21,20 +21,20 @@ const SelectMenu = ({
       <Select.Portal>
         <Select.Content>
           <StyledSelectViewport>
-            <Select.Item value="non-key">
-              <ItemText>NK</ItemText>
+            <Item value="non-key">
+              <Select.ItemText>NK</Select.ItemText>
               <Select.ItemIndicator />
-            </Select.Item>
+            </Item>
 
-            <Select.Item value="primary-key">
-              <ItemText>PK</ItemText>
+            <Item value="primary-key">
+              <Select.ItemText>PK</Select.ItemText>
               <Select.ItemIndicator />
-            </Select.Item>
+            </Item>
 
-            <Select.Item value="foreign-key">
-              <ItemText>FK</ItemText>
+            <Item value="foreign-key">
+              <Select.ItemText>FK</Select.ItemText>
               <Select.ItemIndicator />
-            </Select.Item>
+            </Item>
           </StyledSelectViewport>
         </Select.Content>
       </Select.Portal>
@@ -51,15 +51,21 @@ const Trigger = styled(Select.Trigger)`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.5rem;
+  font-size: 1em;
   gap: 5px;
+  z-index: 2;
 `;
 
-const Value = styled(Select.Value)``;
-
-const ItemText = styled(Select.ItemText)`
+const Item = styled(Select.Item)`
+  cursor: pointer;
+  font-size: 1rem;
   color: white;
-  font-size: 0.5rem;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px;
+  &:hover {
+    background: #202020;
+  }
 `;
 
 const StyledSelectViewport = styled(Select.Viewport)`

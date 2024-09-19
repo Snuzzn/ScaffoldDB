@@ -16,3 +16,7 @@ body,
 input {
   font-family: "Roboto Mono", "Fira Code", monospace;
 }
+
+.pointer-cursor {
+  cursor: pointer !important;
+}
