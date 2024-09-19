@@ -292,7 +292,10 @@ export function RelationNode({
           ))}
 
           {(isActive || data.attributes.length === 0) && (
-            <form onSubmit={handleNewAttributeSubmit}>
+            <form
+              onSubmit={handleNewAttributeSubmit}
+              style={{ textAlign: "start" }}
+            >
               <Input
                 style={{ marginTop: "3px", width: "60px" }}
                 value={newDataType}

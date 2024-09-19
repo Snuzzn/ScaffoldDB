@@ -324,7 +324,7 @@ export const Input = styled.input`
   border: none;
   border-bottom: 1px solid #424242;
   outline: none;
-  width: 150px;
+  width: 100px;
   z-index: 2;
   font-size: 1em;
   &::placeholder {
