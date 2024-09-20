@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import {
   ReactFlow,
   Background,
@@ -19,6 +19,12 @@ import CustomConnectionLine from "./edges/CustomConnectionLine";
 import { AppNode, NodeType } from "./nodes/types";
 import ToolsPanel from "./components/ToolsPanel";
 import { v4 as uuidv4 } from "uuid";
+import MenuPanel from "./components/MenuPanel";
+import {
+  getLatestFileFromLocalStorage,
+  loadDiagram,
+  saveToLocalStorage,
+} from "./utils/fileUtils";
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -26,6 +32,7 @@ function App() {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [nodeType, setNodeType] = useState<NodeType | null>(null);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [filename, setFilename] = useState<string | null>("Untitled");
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
@@ -96,8 +103,27 @@ function App() {
     }
   };
 
+  const [hasFirstLoaded, setHasFirstLoaded] = useState(false);
+  useEffect(() => {
+    const lastOpenedFile = getLatestFileFromLocalStorage();
+    if (lastOpenedFile)
+      loadDiagram(
+        lastOpenedFile,
+        reactFlow,
+        lastOpenedFile.filename.split("blueprintdb-")[1], // get filename from key
+        setFilename,
+      );
+    setHasFirstLoaded(true);
+  }, [reactFlow]);
+
+  useEffect(() => {
+    // auto-save diagram after each change
+    if (hasFirstLoaded) saveToLocalStorage(reactFlow, filename);
+  }, [nodes, edges, reactFlow]);
+
   return (
     <>
+      <MenuPanel filename={filename} setFilename={setFilename} />
       {selectedEdge && (
         <EdgePanel
           edges={edges}

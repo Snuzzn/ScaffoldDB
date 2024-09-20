@@ -2,7 +2,7 @@ import { type NodeProps, useReactFlow } from "@xyflow/react";
 import { type EntityNode } from "./types";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { HiOutlineTrash } from "react-icons/hi";
+import { HiOutlineKey, HiOutlineTrash } from "react-icons/hi";
 import SelectMenu from "../components/SelectMenu";
 import Handle from "../components/Handle";
 import { LayoutGroup, motion } from "framer-motion";
@@ -191,7 +191,10 @@ export function EntityNode({
                     />
                   </EditForm>
                 ) : (
-                  item.label
+                  <>
+                    {item.label + " "}
+                    {item.type === "primary-key" && <HiOutlineKey />}
+                  </>
                 )}
               </AttributeItem>
               <DeleteButton
