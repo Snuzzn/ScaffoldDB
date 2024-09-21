@@ -2,11 +2,11 @@ import { Edge, MarkerType } from "@xyflow/react";
 import { useEffect, useState } from "react";
 import styled, { css } from "styled-components";
 import {
-  PiArrowLeftBold,
-  PiArrowLeftFill,
-  PiArrowRightBold,
-  PiArrowRightFill,
-  PiMinusBold,
+    PiArrowLeftBold,
+    PiArrowLeftFill,
+    PiArrowRightBold,
+    PiArrowRightFill,
+    PiMinusBold,
 } from "react-icons/pi";
 import zeroManyStartIcon from "../images/zero-many-start.svg";
 import zeroManyEndIcon from "../images/zero-many-end.svg";
@@ -21,236 +21,269 @@ import oneManyEndIcon from "../images/one-many-end.svg";
 import { IoCloseSharp } from "react-icons/io5";
 
 type CustomMarkerType =
-  | MarkerType.Arrow
-  | MarkerType.ArrowClosed
-  | "none"
-  | "ManyStart"
-  | "ManyEnd"
-  | "ZeroManyStart"
-  | "ZeroManyEnd"
-  | "ZeroOneStart"
-  | "ZeroOneEnd"
-  | "OneStart"
-  | "OneEnd"
-  | "OnlyOneStart"
-  | "OnlyOneEnd"
-  | "OneManyStart"
-  | "OneManyEnd";
+    | MarkerType.Arrow
+    | MarkerType.ArrowClosed
+    | "none"
+    | "ManyStart"
+    | "ManyEnd"
+    | "ZeroManyStart"
+    | "ZeroManyEnd"
+    | "ZeroOneStart"
+    | "ZeroOneEnd"
+    | "OneStart"
+    | "OneEnd"
+    | "OnlyOneStart"
+    | "OnlyOneEnd"
+    | "OneManyStart"
+    | "OneManyEnd";
 
 const EdgePanel = ({
-  selectedEdge,
-  setEdges,
-  edges,
-  setSelectedEdge,
+    selectedEdge,
+    setEdges,
+    edges,
+    setSelectedEdge,
 }: {
-  selectedEdge: any;
-  edges: Edge[];
-  setEdges: (edges: Edge[]) => void;
-  setSelectedEdge: (edge: Edge | null) => void;
+    selectedEdge: any;
+    edges: Edge[];
+    setEdges: (edges: Edge[]) => void;
+    setSelectedEdge: (edge: Edge | null) => void;
 }) => {
-  const [markerStart, setMarkerStart] = useState<CustomMarkerType>(
-    selectedEdge.markerStart?.type || "none",
-  );
-  const [markerEnd, setMarkerEnd] = useState<CustomMarkerType>(
-    selectedEdge.markerEnd?.type || "none",
-  );
+    const [markerStart, setMarkerStart] = useState<CustomMarkerType>(
+        selectedEdge.markerStart?.type || "none",
+    );
+    const [markerEnd, setMarkerEnd] = useState<CustomMarkerType>(
+        selectedEdge.markerEnd?.type || "none",
+    );
 
-  const modifyMarker = (
-    markerLocation: "markerStart" | "markerEnd",
-    newMarker: CustomMarkerType,
-  ) => {
-    if (markerLocation === "markerStart") setMarkerStart(newMarker);
-    if (markerLocation === "markerEnd") setMarkerEnd(newMarker);
-    const updatedEdges = edges.map((edge: Edge) => {
-      if (edge.id === selectedEdge.id) {
-        return {
-          ...edge,
-          [markerLocation]: {
-            type: newMarker,
-            width: 30,
-            height: 30,
-          },
-        };
-      }
-      return edge;
-    });
-    setEdges(updatedEdges);
-  };
+    const modifyMarker = (
+        markerLocation: "markerStart" | "markerEnd",
+        newMarker: CustomMarkerType,
+    ) => {
+        if (markerLocation === "markerStart") setMarkerStart(newMarker);
+        if (markerLocation === "markerEnd") setMarkerEnd(newMarker);
+        const updatedEdges = edges.map((edge: Edge) => {
+            if (edge.id === selectedEdge.id) {
+                return {
+                    ...edge,
+                    [markerLocation]: {
+                        type: newMarker,
+                        width: 30,
+                        height: 30,
+                    },
+                };
+            }
+            return edge;
+        });
+        setEdges(updatedEdges);
+    };
 
-  const [inputValue, setInputValue] = useState(selectedEdge?.data?.label || "");
+    const [edgeInput, setEdgeInput] = useState(selectedEdge?.data?.label || "");
+    const [sourceInput, setSourceInput] = useState(
+        selectedEdge?.data?.sourceLabel || "",
+    );
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value); // update inputValue state with input value
-  };
-  const modifyEdgeLabel = () => {
-    const updatedEdges = edges.map((edge: Edge) => {
-      if (edge.id === selectedEdge.id) {
-        return {
-          ...edge,
-          data: {
-            ...edge.data, // keep existing data properties
-            label: inputValue, // update label with input value
-          },
-        };
-      }
-      return edge;
-    });
+    const [targetInput, setTargetInput] = useState(
+        selectedEdge?.data?.targetLabel || "",
+    );
 
-    setEdges(updatedEdges);
-  };
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setEdgeInput(event.target.value); // update edgeInput state with input value
+    };
+    const modifyEdgeLabel = () => {
+        const updatedEdges = edges.map((edge: Edge) => {
+            if (edge.id === selectedEdge.id) {
+                return {
+                    ...edge,
+                    data: {
+                        ...edge.data, // keep existing data properties
+                        label: edgeInput, // update label with input value
+                        sourceLabel: sourceInput,
+                        targetLabel: targetInput,
+                    },
+                };
+            }
+            return edge;
+        });
 
-  useEffect(() => {
-    modifyEdgeLabel();
-  }, [inputValue]);
+        setEdges(updatedEdges);
+    };
 
-  return (
-    <div style={{ position: "relative" }}>
-      <EdgePanelWrapper>
-        <CloseButton onClick={() => setSelectedEdge(null)}>
-          <IoCloseSharp size="1.2rem" />
-        </CloseButton>
-        <PanelHeader>Edge Options</PanelHeader>
-        <div>
-          <Title>Markers</Title>
-          <FlexCol>
-            Start
-            <Flex>
-              <MarkerBtn
-                selected={markerStart === "none"}
-                onClick={() => modifyMarker("markerStart", "none")}
-              >
-                <PiMinusBold />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === MarkerType.Arrow}
-                onClick={() => modifyMarker("markerStart", MarkerType.Arrow)}
-              >
-                <PiArrowLeftBold />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === MarkerType.ArrowClosed}
-                onClick={() =>
-                  modifyMarker("markerStart", MarkerType.ArrowClosed)
-                }
-              >
-                <PiArrowLeftFill />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === "ZeroOneStart"}
-                onClick={() => modifyMarker("markerStart", "ZeroOneStart")}
-              >
-                <img src={zeroOneStartIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === "OneStart"}
-                onClick={() => modifyMarker("markerStart", "OneStart")}
-              >
-                <img src={oneIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === "OnlyOneStart"}
-                onClick={() => modifyMarker("markerStart", "OnlyOneStart")}
-              >
-                <img src={onlyOneIcon} />
-              </MarkerBtn>
+    useEffect(() => {
+        modifyEdgeLabel();
+    }, [edgeInput, sourceInput, targetInput]);
 
-              <MarkerBtn
-                selected={markerStart === "ZeroManyStart"}
-                onClick={() => modifyMarker("markerStart", "ZeroManyStart")}
-              >
-                <img src={zeroManyStartIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === "OneManyStart"}
-                onClick={() => modifyMarker("markerStart", "OneManyStart")}
-              >
-                <img src={oneManyStartIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerStart === "ManyStart"}
-                onClick={() => modifyMarker("markerStart", "ManyStart")}
-              >
-                <img src={manyStartIcon} />
-              </MarkerBtn>
-            </Flex>
-            End
-            <Flex>
-              <MarkerBtn
-                selected={markerEnd === "none"}
-                onClick={() => modifyMarker("markerEnd", "none")}
-              >
-                <PiMinusBold />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerEnd === "arrow"}
-                onClick={() => modifyMarker("markerEnd", MarkerType.Arrow)}
-              >
-                <PiArrowRightBold />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerEnd === MarkerType.ArrowClosed}
-                onClick={() =>
-                  modifyMarker("markerEnd", MarkerType.ArrowClosed)
-                }
-              >
-                <PiArrowRightFill />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerEnd === "ZeroOneEnd"}
-                onClick={() => modifyMarker("markerEnd", "ZeroOneEnd")}
-              >
-                <img src={zeroOneEndIcon} />
-              </MarkerBtn>
+    return (
+        <div style={{ position: "relative" }}>
+            <EdgePanelWrapper>
+                <CloseButton onClick={() => setSelectedEdge(null)}>
+                    <IoCloseSharp size="1.2rem" />
+                </CloseButton>
+                <PanelHeader>Edge Options</PanelHeader>
+                <div>
+                    <Title>Markers</Title>
+                    <FlexCol>
+                        Start
+                        <Flex>
+                            <MarkerBtn
+                                selected={markerStart === "none"}
+                                onClick={() => modifyMarker("markerStart", "none")}
+                            >
+                                <PiMinusBold />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === MarkerType.Arrow}
+                                onClick={() => modifyMarker("markerStart", MarkerType.Arrow)}
+                            >
+                                <PiArrowLeftBold />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === MarkerType.ArrowClosed}
+                                onClick={() =>
+                                    modifyMarker("markerStart", MarkerType.ArrowClosed)
+                                }
+                            >
+                                <PiArrowLeftFill />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === "ZeroOneStart"}
+                                onClick={() => modifyMarker("markerStart", "ZeroOneStart")}
+                            >
+                                <img src={zeroOneStartIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === "OneStart"}
+                                onClick={() => modifyMarker("markerStart", "OneStart")}
+                            >
+                                <img src={oneIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === "OnlyOneStart"}
+                                onClick={() => modifyMarker("markerStart", "OnlyOneStart")}
+                            >
+                                <img src={onlyOneIcon} />
+                            </MarkerBtn>
 
-              <MarkerBtn
-                selected={markerEnd === "OneEnd"}
-                onClick={() => modifyMarker("markerEnd", "OneEnd")}
-              >
-                <img src={oneIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerEnd === "OnlyOneEnd"}
-                onClick={() => modifyMarker("markerEnd", "OnlyOneEnd")}
-              >
-                <img src={onlyOneIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerEnd === "ZeroManyEnd"}
-                onClick={() => modifyMarker("markerEnd", "ZeroManyEnd")}
-              >
-                <img src={zeroManyEndIcon} />
-              </MarkerBtn>
-              <MarkerBtn
-                selected={markerEnd === "OneManyEnd"}
-                onClick={() => modifyMarker("markerEnd", "OneManyEnd")}
-              >
-                <img src={oneManyEndIcon} />
-              </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === "ZeroManyStart"}
+                                onClick={() => modifyMarker("markerStart", "ZeroManyStart")}
+                            >
+                                <img src={zeroManyStartIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === "OneManyStart"}
+                                onClick={() => modifyMarker("markerStart", "OneManyStart")}
+                            >
+                                <img src={oneManyStartIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerStart === "ManyStart"}
+                                onClick={() => modifyMarker("markerStart", "ManyStart")}
+                            >
+                                <img src={manyStartIcon} />
+                            </MarkerBtn>
+                        </Flex>
+                        End
+                        <Flex>
+                            <MarkerBtn
+                                selected={markerEnd === "none"}
+                                onClick={() => modifyMarker("markerEnd", "none")}
+                            >
+                                <PiMinusBold />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerEnd === "arrow"}
+                                onClick={() => modifyMarker("markerEnd", MarkerType.Arrow)}
+                            >
+                                <PiArrowRightBold />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerEnd === MarkerType.ArrowClosed}
+                                onClick={() =>
+                                    modifyMarker("markerEnd", MarkerType.ArrowClosed)
+                                }
+                            >
+                                <PiArrowRightFill />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerEnd === "ZeroOneEnd"}
+                                onClick={() => modifyMarker("markerEnd", "ZeroOneEnd")}
+                            >
+                                <img src={zeroOneEndIcon} />
+                            </MarkerBtn>
 
-              <MarkerBtn
-                selected={markerEnd === "ManyEnd"}
-                onClick={() => modifyMarker("markerEnd", "ManyEnd")}
-              >
-                <img src={manyEndIcon} />
-              </MarkerBtn>
-            </Flex>
-          </FlexCol>
+                            <MarkerBtn
+                                selected={markerEnd === "OneEnd"}
+                                onClick={() => modifyMarker("markerEnd", "OneEnd")}
+                            >
+                                <img src={oneIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerEnd === "OnlyOneEnd"}
+                                onClick={() => modifyMarker("markerEnd", "OnlyOneEnd")}
+                            >
+                                <img src={onlyOneIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerEnd === "ZeroManyEnd"}
+                                onClick={() => modifyMarker("markerEnd", "ZeroManyEnd")}
+                            >
+                                <img src={zeroManyEndIcon} />
+                            </MarkerBtn>
+                            <MarkerBtn
+                                selected={markerEnd === "OneManyEnd"}
+                                onClick={() => modifyMarker("markerEnd", "OneManyEnd")}
+                            >
+                                <img src={oneManyEndIcon} />
+                            </MarkerBtn>
+
+                            <MarkerBtn
+                                selected={markerEnd === "ManyEnd"}
+                                onClick={() => modifyMarker("markerEnd", "ManyEnd")}
+                            >
+                                <img src={manyEndIcon} />
+                            </MarkerBtn>
+                        </Flex>
+                    </FlexCol>
+                </div>
+                <div style={{ marginTop: "5px" }}>
+                    <Title>
+                        <label htmlFor="edge-name">Mid Label</label>
+                    </Title>
+                    <Input
+                        name="edge-name"
+                        type="text"
+                        value={edgeInput}
+                        onChange={(e) => setEdgeInput(e.target.value)}
+                        placeholder="e.g. 'Contains'"
+                    />
+                </div>
+                <div style={{ marginTop: "5px" }}>
+                    <Title>
+                        <label htmlFor="edge-name">Source Label</label>
+                    </Title>
+                    <Input
+                        name="edge-name"
+                        type="text"
+                        value={sourceInput}
+                        onChange={(e) => setSourceInput(e.target.value)}
+                        placeholder="e.g. '0'"
+                    />
+                </div>
+                <div style={{ marginTop: "5px" }}>
+                    <Title>
+                        <label htmlFor="edge-name">Destination Label</label>
+                    </Title>
+                    <Input
+                        name="edge-name"
+                        type="text"
+                        value={targetInput}
+                        onChange={(e) => setTargetInput(e.target.value)}
+                        placeholder="e.g. '0'"
+                    />
+                </div>
+            </EdgePanelWrapper>
         </div>
-        <div style={{ marginTop: "5px" }}>
-          <Title>
-            <label htmlFor="edge-name">Label</label>
-          </Title>
-          <Input
-            name="edge-name"
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-            placeholder="e.g. 'Contains'"
-          />
-        </div>
-      </EdgePanelWrapper>
-    </div>
-  );
+    );
 };
 
 export default EdgePanel;
@@ -262,7 +295,7 @@ const EdgePanelWrapper = styled.div`
   right: 15px;
   padding: 20px;
   width: 290px;
-  height: 450px;
+  //height: 450px;
   color: white;
   z-index: 4;
   border: 2px solid #2c2d33;
@@ -312,8 +345,8 @@ const MarkerBtn = styled.button<{ selected: boolean }>`
   border-radius: 5px;
   cursor: pointer;
   ${({ selected }) =>
-    selected &&
-    css`
+        selected &&
+        css`
       background: #3d57dcff;
       color: white;
     `}

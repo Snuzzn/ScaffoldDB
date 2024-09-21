@@ -1,70 +1,70 @@
 import styled, { css } from "styled-components";
 import {
-  Handle as FlowHandle,
-  Position,
-  useConnection,
-  useHandleConnections,
+    Handle as FlowHandle,
+    Position,
+    useConnection,
+    useHandleConnections,
 } from "@xyflow/react";
 import { useEffect } from "react";
 
 type HandleProps = {
-  id: string;
-  setIsHovered: (isHovered: boolean) => void;
-  isHovered: boolean;
+    id: string;
+    setIsHovered: (isHovered: boolean) => void;
+    isHovered: boolean;
 };
 
 const Handle = ({ id, setIsHovered, isHovered }: HandleProps) => {
-  const connection = useConnection();
-  const isTarget = connection.inProgress && connection.fromNode.id !== id;
-  useHandleConnections({
-    type: "target",
-    nodeId: id,
-    onConnect: () => {
-      setIsHovered(false);
-    },
-    onDisconnect: () => {
-      setIsHovered(false);
-    },
-  });
+    const connection = useConnection();
+    const isTarget = connection.inProgress && connection.fromNode.id !== id;
+    useHandleConnections({
+        type: "target",
+        nodeId: id,
+        onConnect: () => {
+            setIsHovered(false);
+        },
+        onDisconnect: () => {
+            setIsHovered(false);
+        },
+    });
 
-  useHandleConnections({
-    type: "source",
-    nodeId: id,
-    onConnect: () => {
-      setIsHovered(false);
-    },
-    onDisconnect: () => {
-      setIsHovered(false);
-    },
-  });
+    useHandleConnections({
+        type: "source",
+        nodeId: id,
+        onConnect: () => {
+            setIsHovered(false);
+        },
+        onDisconnect: () => {
+            setIsHovered(false);
+        },
+    });
 
-  useEffect(() => {
-    if (!connection.inProgress && !connection.isValid) setIsHovered(false);
-  }, [connection]);
+    useEffect(() => {
+        if (!connection.inProgress && !connection.isValid) setIsHovered(false);
+    }, [connection]);
 
-  return (
-    <div>
-      <Cover />
-      {!connection.inProgress && (
-        <FullHandle
-          position={Position.Right}
-          type="source"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        />
-      )}
-      {(!connection.inProgress || isTarget) && (
-        <FullHandle
-          position={Position.Left}
-          type="target"
-          isConnectableStart={false}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        />
-      )}
-      {isHovered && <Background />}
-    </div>
-  );
+    return (
+        <div>
+            <Cover />
+            {!connection.inProgress && (
+                <FullHandle
+                    position={Position.Right}
+                    type="source"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                />
+            )}
+            {(!connection.inProgress || isTarget) && (
+                <FullHandle
+                    position={Position.Left}
+                    type="target"
+                    isConnectableStart={false}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                />
+            )}
+            {isHovered && <Background />}
+        </div>
+    );
 };
 
 export default Handle;
@@ -77,7 +77,7 @@ const sharedHandleStyles = css`
 `;
 
 const FullHandle = styled(FlowHandle)`
-  border-radius: 0;
+  //border-radius: 0;
   transform: none;
   opacity: 0;
   ${sharedHandleStyles}

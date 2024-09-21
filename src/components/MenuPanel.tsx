@@ -5,321 +5,337 @@ import fileIcon from "../images/file.svg";
 import { FiMenu } from "react-icons/fi";
 import { useReactFlow } from "@xyflow/react";
 import { Modal } from "./Modal";
+import { UnstyledBtn } from "./Shared";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Dropdown from "./Dropdown";
-import { LuFolderOpen, LuDownload, LuFilePlus, LuTrash2 } from "react-icons/lu";
+import { LuFolderOpen, LuDownload, LuFilePlus } from "react-icons/lu";
 import {
-  appName,
-  getNextUntitledFilename,
-  loadDiagram,
-  renameFileInLocalStorage,
-  saveToLocalStorage,
+    appName,
+    downloadImage,
+    generateNextAvailableFilename,
+    loadDiagram,
+    renameFileInLocalStorage,
+    saveToLocalStorage,
 } from "../utils/fileUtils";
 import { motion } from "framer-motion";
 import { HiOutlineTrash } from "react-icons/hi";
+import { useSnackbar } from "notistack";
+import { IoImageOutline } from "react-icons/io5";
 
 interface RecentFile {
-  name: string;
-  date: string;
-  timestamp: string;
+    name: string;
+    date: string;
+    timestamp: string;
 }
 
 const MenuPanel = ({
-  filename,
-  setFilename,
+    filename,
+    setFilename,
 }: {
-  filename: string | null;
-  setFilename: (filename: string | null) => void;
+    filename: string | null;
+    setFilename: (filename: string | null) => void;
 }) => {
-  const reactFlow = useReactFlow();
-  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedFilename, setEditedFilename] = useState(filename || "");
+    const reactFlow = useReactFlow();
+    const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedFilename, setEditedFilename] = useState(filename || "");
 
-  useEffect(() => {
-    // for renaming a newly opened file
-    setEditedFilename(filename || "");
-  }, [filename]);
+    const { enqueueSnackbar } = useSnackbar();
 
-  const handleFilenameClick = () => {
-    setIsEditing(true);
-  };
+    useEffect(() => {
+        // for renaming a newly opened file
+        setEditedFilename(filename || "");
+    }, [filename]);
 
-  const handleFilenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditedFilename(e.target.value);
-  };
+    const handleFilenameClick = () => {
+        setIsEditing(true);
+    };
 
-  const handleFilenameBlur = () => {
-    setIsEditing(false);
-    setFilename(editedFilename);
-    renameFileInLocalStorage(filename, editedFilename);
-  };
+    const handleFilenameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditedFilename(e.target.value);
+    };
 
-  const handleFilenameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      setIsEditing(false);
-      setFilename(editedFilename);
-      renameFileInLocalStorage(filename, editedFilename);
-    }
-  };
-
-  const exportToJson = () => {
-    const nodes = reactFlow.getNodes();
-    const edges = reactFlow.getEdges();
-
-    const data = { nodes, edges };
-    const jsonString = JSON.stringify(data, null, 2);
-
-    // Create a Blob with the JSON data
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const link = document.createElement("a");
-    link.download = `${filename}.json`;
-    link.href = window.URL.createObjectURL(blob);
-    link.click();
-    window.URL.revokeObjectURL(link.href);
-  };
-
-  const [isDiagramManagerOpen, setIsDiagramManagerOpen] = useState(false);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "application/json": [".json"],
-    },
-    onDrop: (acceptedFiles) => {
-      handleFileUpload(acceptedFiles[0]);
-    },
-  });
-
-  const handleFileUpload = (file: File) => {
-    if (file.type === "application/json") {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result;
-        if (typeof result === "string") {
-          try {
-            const json = JSON.parse(result);
-            // Remove the file extension from the filename
-            const filenameWithoutExtension = file.name
-              .split(".")
-              .slice(0, -1)
-              .join(".");
-            loadDiagram(json, reactFlow, filenameWithoutExtension, setFilename);
-            setIsDiagramManagerOpen(false);
-          } catch (error) {
-            console.error("Error parsing JSON file", error);
-          }
-        } else {
-          console.error("File content is not a valid string");
-        }
-      };
-      reader.readAsText(file);
-    } else {
-      console.error("Uploaded file is not a valid JSON file.");
-    }
-  };
-
-  const handleFileOpen = (selectedFilename: string) => {
-    console.log(selectedFilename);
-    const fileKey = `${appName}-${selectedFilename}`;
-    const fileDataString = localStorage.getItem(fileKey);
-
-    if (fileDataString) {
-      try {
-        const fileData = JSON.parse(fileDataString);
-        loadDiagram(fileData, reactFlow, selectedFilename, setFilename);
-        setIsDiagramManagerOpen(false);
-      } catch (error) {
-        console.error("Error parsing file data", error);
-      }
-    } else {
-      console.error("File not found in localStorage");
-    }
-  };
-
-  const handleFileDelete = (selectedFilename: string) => {
-    // Remove from localStorage
-    const fileKey = `${appName}-${selectedFilename}`;
-    localStorage.removeItem(fileKey);
-
-    // Remove from recentFiles state
-    setRecentFiles((prevFiles) =>
-      prevFiles.filter((file) => file.name !== selectedFilename),
-    );
-
-    console.log(filename, selectedFilename);
-    // if currently open file is deleted, create a new file
-    if (filename === selectedFilename) {
-      createNewFile(false);
-    }
-  };
-
-  // grab files from local storage
-  useEffect(() => {
-    const files: RecentFile[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(`${appName}-`)) {
-        // Null check for key
-        const fileName = key.replace(`${appName}-`, "");
-        const fileDataString = localStorage.getItem(key);
-        if (fileDataString) {
-          // Null check for localStorage value
-          try {
-            const fileData = JSON.parse(fileDataString);
-            console.log(fileData.timestamp);
-            const formattedDate = new Date(fileData.timestamp).toLocaleString(
-              "en-GB",
-              {
-                day: "2-digit",
-                month: "2-digit",
-                year: "2-digit",
-                hour: "numeric",
-                minute: "numeric",
-                hour12: true,
-              },
+    const submitFilenameChange = () => {
+        try {
+            renameFileInLocalStorage(filename, editedFilename);
+            setFilename(editedFilename);
+        } catch {
+            enqueueSnackbar(
+                "A file with the same name already exists. Please choose a different name.",
+                {
+                    variant: "error",
+                },
             );
-            files.push({
-              name: fileName,
-              date: formattedDate || "Unknown date",
-              timestamp: fileData.timestamp,
-            });
-          } catch (error) {
-            console.error("Error parsing file data from localStorage", error);
-          }
         }
-      }
-    }
-    setRecentFiles(files);
-  }, [isDiagramManagerOpen]);
 
-  const createNewFile = (saveCurrentFile: boolean) => {
-    // save the current one just in case it wasn't already
-    if (saveCurrentFile) saveToLocalStorage(reactFlow, filename);
+        setIsEditing(false);
+    };
+    const handleFilenameBlur = () => {
+        submitFilenameChange();
+    };
 
-    // set new name
-    const newFilename = getNextUntitledFilename();
-    setFilename(newFilename);
+    const handleFilenameKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            submitFilenameChange();
+        }
+    };
 
-    // reset current reactflow data
-    reactFlow.setEdges([]);
-    reactFlow.setNodes([]);
-  };
+    const exportToJson = () => {
+        const nodes = reactFlow.getNodes();
+        const edges = reactFlow.getEdges();
 
-  // create new file (handle overwrite situation where the same file name is used)
-  // 'save as JSON'
-  // 'save as PNG'
-  // load diagram
-  // export file
-  //
-  //
-  return (
-    <Container layout>
-      <Title layout>
-        <Logo src={logo} />
-        BlueprintDB
-      </Title>
-      <Divider layout />
-      {isEditing ? (
-        <Input
-          value={editedFilename}
-          onChange={handleFilenameChange}
-          onBlur={handleFilenameBlur}
-          onKeyDown={handleFilenameKeyDown}
-          autoFocus
-          layout
-        />
-      ) : (
-        <DocumentName onClick={handleFilenameClick} layout="position">
-          {filename || "Untitled"}
-        </DocumentName>
-      )}
-      <Dropdown
-        items={[
-          {
-            name: "New file",
-            icon: <LuFilePlus />,
-            onSelect: () => createNewFile(false),
-          },
-          {
-            name: "Open file",
-            icon: <LuFolderOpen />,
-            onSelect: () => setIsDiagramManagerOpen(true),
-          },
-          {
-            name: "Export as JSON",
-            icon: <LuDownload />,
-            onSelect: () => exportToJson(),
-          },
-        ]}
-      >
-        <UnstyledBtn layout="position">
-          <FiMenu color="white" size="1rem" />
-        </UnstyledBtn>
-      </Dropdown>
-      <Modal isOpen={isDiagramManagerOpen} setIsOpen={setIsDiagramManagerOpen}>
-        <ModalContainer>
-          <ModalHeader>Open file</ModalHeader>
-          <Flex>
-            <RecentWrapper>
-              <h2>Recent files...</h2>
-              <RecentContainer>
-                {recentFiles
-                  .sort(
-                    (a, b) =>
-                      new Date(b.timestamp).getTime() -
-                      new Date(a.timestamp).getTime(),
-                  ) // Sort by timestamp
-                  .map((file) => (
-                    <FileBtn
-                      key={file.name}
-                      onClick={() => handleFileOpen(file.name)}
-                      layout="position"
-                    >
-                      <img src={fileIcon} width="35px" height="35px" />
-                      <FileDetails>
-                        <div>{file.name}</div>
-                        <FileDate>{file.date}</FileDate>
-                      </FileDetails>
-                      <UnstyledBtn
-                        onClick={() => handleFileDelete(file.name)} // Call handleFileDelete when clicked
-                        style={{
-                          marginLeft: "auto",
-                          padding: "10px",
-                        }}
-                      >
-                        <HiOutlineTrash size={20} color="#424242" />
-                      </UnstyledBtn>
-                    </FileBtn>
-                  ))}
-              </RecentContainer>
-            </RecentWrapper>
-            <DropZoneWrapper>
-              <h2>From your computer...</h2>
-              <DropZoneContainer {...getRootProps({ className: "dropzone" })}>
-                <input {...getInputProps()} />
-                <UnstyledBtn>
-                  <img src={dropIcon} width={"70px"} />
+        const data = { nodes, edges };
+        const jsonString = JSON.stringify(data, null, 2);
+
+        // Create a Blob with the JSON data
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const link = document.createElement("a");
+        link.download = `${filename}.json`;
+        link.href = window.URL.createObjectURL(blob);
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+    };
+
+    const [isDiagramManagerOpen, setIsDiagramManagerOpen] = useState(false);
+
+    const { getRootProps, getInputProps } = useDropzone({
+        accept: {
+            "application/json": [".json"],
+        },
+        onDrop: (acceptedFiles) => {
+            handleFileUpload(acceptedFiles[0]);
+        },
+    });
+
+    const handleFileUpload = (file: File) => {
+        if (file.type === "application/json") {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result;
+                if (typeof result === "string") {
+                    try {
+                        const json = JSON.parse(result);
+                        // Remove the file extension from the filename
+
+                        let filenameWithoutExtension = file.name
+                            .split(".")
+                            .slice(0, -1)
+                            .join(".");
+
+                        const newKey = `${appName}-${filenameWithoutExtension}`;
+                        if (localStorage.getItem(newKey)) {
+                            filenameWithoutExtension = generateNextAvailableFilename(
+                                filenameWithoutExtension,
+                            );
+                        }
+                        loadDiagram(json, reactFlow, filenameWithoutExtension, setFilename);
+                        setIsDiagramManagerOpen(false);
+                    } catch (error) {
+                        console.error("Error parsing JSON file", error);
+                    }
+                } else {
+                    console.error("File content is not a valid string");
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            console.error("Uploaded file is not a valid JSON file.");
+        }
+    };
+
+    const handleFileOpen = (selectedFilename: string) => {
+        const fileKey = `${appName}-${selectedFilename}`;
+        const fileDataString = localStorage.getItem(fileKey);
+
+        if (fileDataString) {
+            try {
+                const fileData = JSON.parse(fileDataString);
+                loadDiagram(fileData, reactFlow, selectedFilename, setFilename);
+
+                setIsDiagramManagerOpen(false);
+            } catch (error) {
+                console.error("Error parsing file data", error);
+            }
+        } else {
+            console.error("File not found in localStorage");
+        }
+    };
+
+    const handleFileDelete = (selectedFilename: string) => {
+        // Remove from localStorage
+        const fileKey = `${appName}-${selectedFilename}`;
+        localStorage.removeItem(fileKey);
+
+        // Remove from recentFiles state
+        setRecentFiles((prevFiles) =>
+            prevFiles.filter((file) => file.name !== selectedFilename),
+        );
+
+        // if currently open file is deleted, create a new file
+        if (filename === selectedFilename) {
+            createNewFile(false);
+        }
+    };
+
+    // grab files from local storage
+    useEffect(() => {
+        const files: RecentFile[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(`${appName}-`)) {
+                // Null check for key
+                const fileName = key.replace(`${appName}-`, "");
+                const fileDataString = localStorage.getItem(key);
+                if (fileDataString) {
+                    // Null check for localStorage value
+                    try {
+                        const fileData = JSON.parse(fileDataString);
+                        const formattedDate = new Date(fileData.timestamp).toLocaleString(
+                            "en-GB",
+                            {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "2-digit",
+                                hour: "numeric",
+                                minute: "numeric",
+                                hour12: true,
+                            },
+                        );
+                        files.push({
+                            name: fileName,
+                            date: formattedDate || "Unknown date",
+                            timestamp: fileData.timestamp,
+                        });
+                    } catch (error) {
+                        console.error("Error parsing file data from localStorage", error);
+                    }
+                }
+            }
+        }
+        setRecentFiles(files);
+    }, [isDiagramManagerOpen]);
+
+    const createNewFile = (saveCurrentFile: boolean) => {
+        // save the current one just in case it wasn't already
+        if (saveCurrentFile) saveToLocalStorage(reactFlow, filename);
+
+        // set new name
+        const newFilename = generateNextAvailableFilename("Untitled");
+        setFilename(newFilename);
+
+        // reset current reactflow data
+        reactFlow.setEdges([]);
+        reactFlow.setNodes([]);
+    };
+
+    return (
+        <Container layout>
+            <Title layout>
+                <Logo src={logo} />
+                BlueprintDB
+            </Title>
+            <Divider layout />
+            {isEditing ? (
+                <Input
+                    value={editedFilename}
+                    onChange={handleFilenameChange}
+                    onBlur={handleFilenameBlur}
+                    onKeyDown={handleFilenameKeyDown}
+                    autoFocus
+                    layout
+                />
+            ) : (
+                <DocumentName onClick={handleFilenameClick} layout="position">
+                    {filename || "Untitled"}
+                </DocumentName>
+            )}
+            <Dropdown
+                items={[
+                    {
+                        name: "New file",
+                        icon: <LuFilePlus />,
+                        onSelect: () => createNewFile(false),
+                    },
+                    {
+                        name: "Open file",
+                        icon: <LuFolderOpen />,
+                        onSelect: () => setIsDiagramManagerOpen(true),
+                    },
+                    {
+                        name: "Export as JSON",
+                        icon: <LuDownload />,
+                        onSelect: () => exportToJson(),
+                    },
+                    {
+                        name: "Export as PNG",
+                        icon: <IoImageOutline />,
+                        onSelect: () => downloadImage(reactFlow, filename || "diagram"),
+                    },
+                ]}
+            >
+                <UnstyledBtn layout="position">
+                    <FiMenu color="white" size="1rem" />
                 </UnstyledBtn>
-                <div style={{ textAlign: "center" }}>
-                  Drag & Drop or <br />
-                  <u>Choose file</u> to upload
-                </div>
-              </DropZoneContainer>
-            </DropZoneWrapper>
-          </Flex>
-        </ModalContainer>
-      </Modal>
-    </Container>
-  );
+            </Dropdown>
+            <Modal isOpen={isDiagramManagerOpen} setIsOpen={setIsDiagramManagerOpen}>
+                <ModalContainer>
+                    <ModalHeader>Open file</ModalHeader>
+                    <Flex>
+                        <RecentWrapper>
+                            <h2>Recent files...</h2>
+                            <RecentContainer>
+                                {recentFiles
+                                    .sort(
+                                        (a, b) =>
+                                            new Date(b.timestamp).getTime() -
+                                            new Date(a.timestamp).getTime(),
+                                    ) // Sort by timestamp
+                                    .map((file) => (
+                                        <FileBtn
+                                            key={file.name}
+                                            onClick={() => handleFileOpen(file.name)}
+                                            layout="position"
+                                        >
+                                            <img src={fileIcon} width="35px" height="35px" />
+                                            <FileDetails>
+                                                <div>{file.name}</div>
+                                                <FileDate>{file.date}</FileDate>
+                                            </FileDetails>
+                                            <UnstyledBtn
+                                                onClick={() => handleFileDelete(file.name)} // Call handleFileDelete when clicked
+                                                style={{
+                                                    marginLeft: "auto",
+                                                    padding: "10px",
+                                                }}
+                                            >
+                                                <HiOutlineTrash size={20} color="#424242" />
+                                            </UnstyledBtn>
+                                        </FileBtn>
+                                    ))}
+                            </RecentContainer>
+                        </RecentWrapper>
+                        <DropZoneWrapper>
+                            <h2>From your computer...</h2>
+                            <DropZoneContainer {...getRootProps({ className: "dropzone" })}>
+                                <input {...getInputProps()} />
+                                <UnstyledBtn>
+                                    <img src={dropIcon} width={"70px"} />
+                                </UnstyledBtn>
+                                <div style={{ textAlign: "center" }}>
+                                    Drag & Drop or <br />
+                                    <u>Choose file</u> to upload
+                                </div>
+                            </DropZoneContainer>
+                        </DropZoneWrapper>
+                    </Flex>
+                </ModalContainer>
+            </Modal>
+        </Container>
+    );
 };
 
 export default MenuPanel;
-const UnstyledBtn = styled(motion.button)`
-  border: none;
-  background: none;
-  cursor: pointer;
-`;
 
 const ModalContainer = styled.div`
   color: white;

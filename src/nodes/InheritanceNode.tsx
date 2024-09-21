@@ -7,78 +7,78 @@ import { NodeWrapper } from "./EntityNode";
 import { calculateSize } from "../utils/nodeUtils";
 
 export function InheritanceNode({
-  data,
-  id,
-  selected,
+    data,
+    id,
+    selected,
 }: NodeProps<InheritanceNode>) {
-  const isActive = selected;
-  const reactFlow = useReactFlow();
+    const isActive = selected;
+    const reactFlow = useReactFlow();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [labelValue, setLabelValue] = useState(data.label || "");
+    const [isEditing, setIsEditing] = useState(false);
+    const [labelValue, setLabelValue] = useState(data.label || "");
 
-  const [isHovered, setIsHovered] = useState(false);
-  const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLabelValue(e.target.value);
-  };
+    const [isHovered, setIsHovered] = useState(false);
+    const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLabelValue(e.target.value);
+    };
 
-  const handleLabelSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (labelValue === "") return;
-    setIsEditing(false);
+    const handleLabelSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (labelValue === "") return;
+        setIsEditing(false);
 
-    reactFlow.setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              label: labelValue,
-            },
-          };
-        }
-        return node;
-      }),
+        reactFlow.setNodes((nodes) =>
+            nodes.map((node) => {
+                if (node.id === id) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            label: labelValue,
+                        },
+                    };
+                }
+                return node;
+            }),
+        );
+    };
+
+    const handleLabelClick = () => {
+        if (!isActive) return;
+        setIsEditing(true);
+    };
+
+    const nodeSize = calculateSize(labelValue, 30, 150);
+
+    return (
+        <InheritanceWrapper
+            className="react-flow__node-default"
+            $isHovered={isHovered}
+            $isActive={isActive}
+            $size={nodeSize}
+        >
+            <Handle id={id} setIsHovered={setIsHovered} isHovered={isHovered} />
+            <Body>
+                <div style={{ position: "relative" }}>
+                    {isEditing ? (
+                        <form onSubmit={handleLabelSubmit}>
+                            <LabelInput
+                                value={labelValue}
+                                onChange={handleLabelChange}
+                                onBlur={handleLabelSubmit}
+                                autoFocus
+                            />
+                        </form>
+                    ) : (
+                        <div onClick={handleLabelClick}>{data.label}</div>
+                    )}
+                </div>
+            </Body>
+        </InheritanceWrapper>
     );
-  };
-
-  const handleLabelClick = () => {
-    if (!isActive) return;
-    setIsEditing(true);
-  };
-
-  const nodeSize = calculateSize(labelValue, 30, 150);
-
-  return (
-    <InheritanceWrapper
-      className="react-flow__node-default"
-      $isHovered={isHovered}
-      $isActive={isActive}
-      $size={nodeSize}
-    >
-      <Handle id={id} setIsHovered={setIsHovered} isHovered={isHovered} />
-      <Body>
-        <div style={{ position: "relative" }}>
-          {isEditing ? (
-            <form onSubmit={handleLabelSubmit}>
-              <LabelInput
-                value={labelValue}
-                onChange={handleLabelChange}
-                onBlur={handleLabelSubmit}
-                autoFocus
-              />
-            </form>
-          ) : (
-            <div onClick={handleLabelClick}>{data.label}</div>
-          )}
-        </div>
-      </Body>
-    </InheritanceWrapper>
-  );
 }
 
-const InheritanceWrapper = styled(NodeWrapper)<{ $size: number }>`
+const InheritanceWrapper = styled(NodeWrapper) <{ $size: number }>`
   width: ${({ $size }) => $size}px;
   height: ${({ $size }) => $size}px;
   border-radius: 100%;

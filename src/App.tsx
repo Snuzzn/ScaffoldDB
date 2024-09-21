@@ -25,6 +25,7 @@ import {
   loadDiagram,
   saveToLocalStorage,
 } from "./utils/fileUtils";
+import ControlsPanel from "./components/ControlsPanel";
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -35,6 +36,10 @@ function App() {
   const [filename, setFilename] = useState<string | null>("Untitled");
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    console.log(nodes);
+  }, [nodes]);
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
@@ -123,6 +128,7 @@ function App() {
 
   return (
     <>
+      <ControlsPanel />
       <MenuPanel filename={filename} setFilename={setFilename} />
       {selectedEdge && (
         <EdgePanel
@@ -162,9 +168,10 @@ function App() {
           connectionLineComponent={CustomConnectionLine}
           connectionLineStyle={connectionLineStyle}
           proOptions={proOptions}
+          className="download-image"
         >
           <Background />
-          <MiniMap nodeBorderRadius={10} />
+          <MiniMap nodeBorderRadius={10} pannable zoomable />
         </ReactFlow>
       </div>
     </>

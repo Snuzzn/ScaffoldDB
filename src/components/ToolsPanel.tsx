@@ -17,19 +17,18 @@ const ToolsPanel = ({ nodeType, setNodeType }: ToolsPanelProps) => {
 
     if (flowPane) {
       if (nodeType !== null) {
-        flowPane.classList.add("pointer-cursor");
+        flowPane.style.cursor = "pointer"; // force the cursor to pointer
       } else {
-        flowPane.classList.remove("pointer-cursor");
+        flowPane.style.cursor = ""; // reset to default when no node type is selected
       }
     }
 
     return () => {
       if (flowPane) {
-        flowPane.classList.remove("pointer-cursor");
+        flowPane.style.cursor = "";
       }
     };
   }, [nodeType]);
-
   return (
     <Wrapper>
       <Button
