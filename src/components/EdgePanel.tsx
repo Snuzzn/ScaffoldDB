@@ -247,7 +247,7 @@ const EdgePanel = ({
                 </div>
                 <div style={{ marginTop: "5px" }}>
                     <Title>
-                        <label htmlFor="edge-name">Mid Label</label>
+                        <label htmlFor="edge-name">Edge Label</label>
                     </Title>
                     <Input
                         name="edge-name"

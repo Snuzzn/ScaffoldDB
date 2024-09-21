@@ -11,6 +11,11 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  background: #151515;
+}
+
+.react-flow__renderer {
+  background: #151515;
 }
 
 input {

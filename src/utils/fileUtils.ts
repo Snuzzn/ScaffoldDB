@@ -1,13 +1,7 @@
-import {
-    Node,
-    Edge,
-    ReactFlowInstance,
-    FitView,
-    getNodesBounds,
-} from "@xyflow/react";
+import { Node, Edge, ReactFlowInstance, getNodesBounds } from "@xyflow/react";
 import { toPng } from "html-to-image";
 
-export const appName = "blueprintdb";
+export const appName = "scaffolddb";
 export const saveToLocalStorage = (
     reactFlowInstance: ReactFlowInstance,
     filename: string | null,
@@ -33,7 +27,6 @@ export const loadDiagram = (
     setFilename: (filename: string | null) => void,
 ) => {
     if (json.nodes && json.edges) {
-        // TODO: If nodes and edges exist already, give warning toast first.
         reactFlow.setNodes(json.nodes);
         reactFlow.setEdges(json.edges);
 

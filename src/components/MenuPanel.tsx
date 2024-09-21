@@ -233,7 +233,7 @@ const MenuPanel = ({
         <Container layout>
             <Title layout>
                 <Logo src={logo} />
-                BlueprintDB
+                ScaffoldDB
             </Title>
             <Divider layout />
             {isEditing ? (

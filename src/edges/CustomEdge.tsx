@@ -48,14 +48,14 @@ export default function CustomEdge({
                 markerStart={markerStart}
             />
             <EdgeLabelRenderer>
-                <EdgeLabel
+                <EndpointLabel
                     transform={`translate(-45%, -100%) translate(${sx + offsetSX}px, ${sy + offsetSY}px)`}
                     label={data.sourceLabel}
                 />
                 <Label $midX={midX} $midY={midY}>
                     {data?.label}
                 </Label>
-                <EdgeLabel
+                <EndpointLabel
                     transform={`translate(-45%, -100%) translate(${tx + offsetTX}px, ${ty + offsetTY}px)`}
                     label={data.targetLabel}
                 />
@@ -64,24 +64,29 @@ export default function CustomEdge({
     );
 }
 
-function EdgeLabel({ transform, label }: { transform: string; label: string }) {
+function EndpointLabel({
+    transform,
+    label,
+}: {
+    transform: string;
+    label: string;
+}) {
     return (
-        <div
-            style={{
-                position: "absolute",
-                background: "transparent",
-                padding: 10,
-                color: "white",
-                fontSize: 12,
-                fontWeight: 700,
-                transform,
-            }}
-            className="nodrag nopan"
-        >
+        <EndpointLabelWrapper className="nodrag nopan" $transform={transform}>
             {label}
-        </div>
+        </EndpointLabelWrapper>
     );
 }
+
+const EndpointLabelWrapper = styled.div<{ $transform: string }>`
+  position: absolute;
+  background: transparent;
+  padding: 10px;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  transform: ${({ $transform }) => $transform};
+`;
 
 interface LabelProps {
     $midX: number;
