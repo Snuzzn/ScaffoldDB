@@ -86,9 +86,6 @@ const EdgePanel = ({
         selectedEdge?.data?.targetLabel || "",
     );
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setEdgeInput(event.target.value); // update edgeInput state with input value
-    };
     const modifyEdgeLabel = () => {
         const updatedEdges = edges.map((edge: Edge) => {
             if (edge.id === selectedEdge.id) {

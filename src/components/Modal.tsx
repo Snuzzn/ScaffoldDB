@@ -85,7 +85,3 @@ const Button = styled.button`
   cursor: pointer;
   border-radius: 5px;
 `;
-
-const StyledTitle = styled(Dialog.Title)`
-  margin-bottom: 20px;
-`;
