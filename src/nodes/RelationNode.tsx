@@ -6,307 +6,307 @@ import { HiOutlineKey, HiOutlineTrash } from "react-icons/hi";
 import SelectMenu from "../components/SelectMenu";
 import Handle from "../components/Handle";
 import {
-  AttributeItem,
-  AttributeWrapper,
-  DeleteButton,
-  EditInput,
-  Header,
-  Input,
-  NodeWrapper,
+    AttributeItem,
+    AttributeWrapper,
+    DeleteButton,
+    EditInput,
+    Header,
+    Input,
+    NodeWrapper,
 } from "./EntityNode";
 
 interface CustomEntityNode extends EntityNode {
-  data: {
-    label: string;
-    attributes: Attribute[];
-  };
+    data: {
+        label: string;
+        attributes: Attribute[];
+    };
 }
 export function RelationNode({
-  data,
-  id,
-  selected,
+    data,
+    id,
+    selected,
 }: NodeProps<CustomEntityNode>) {
-  const reactFlow = useReactFlow();
-  const isActive = selected;
-  const [inputValue, setInputValue] = useState("");
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [newAttributeValue, setNewAttributeValue] = useState("");
-  const [newDataType, setNewDataType] = useState("");
-  const [attributeType, setAttributeType] = useState("non-key");
+    const reactFlow = useReactFlow();
+    const isActive = selected;
+    const [inputValue, setInputValue] = useState("");
+    const [editIndex, setEditIndex] = useState<number | null>(null);
+    const [newAttributeValue, setNewAttributeValue] = useState("");
+    const [newDataType, setNewDataType] = useState("");
+    const [attributeType, setAttributeType] = useState("non-key");
 
-  const [isEditingHeader, setIsEditingHeader] = useState(false);
-  const [headerValue, setHeaderValue] = useState(data.label || "");
+    const [isEditingHeader, setIsEditingHeader] = useState(false);
+    const [headerValue, setHeaderValue] = useState(data.label || "");
 
-  const [isHovered, setIsHovered] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(e.target.value);
+    };
 
-  const handleNewAttributeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewAttributeValue(e.target.value);
-  };
+    const handleNewAttributeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewAttributeValue(e.target.value);
+    };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputValue === "") return;
-    if (editIndex !== null) {
-      reactFlow.setNodes((nodes) =>
-        nodes.map((n) => {
-          const node = n as CustomEntityNode; // Cast to your custom type
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                attributes: node.data.attributes.map(
-                  (attr: Attribute, index: number) =>
-                    index === editIndex ? { ...attr, label: inputValue } : attr,
-                ),
-              },
-            };
-          }
-          return node;
-        }),
-      );
-      setEditIndex(null);
-      setInputValue("");
-    }
-  };
-
-  const handleNewAttributeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    reactFlow.setNodes((nodes) =>
-      nodes.map((n) => {
-        const node = n as CustomEntityNode;
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              attributes: [
-                ...node.data.attributes,
-                {
-                  label: newAttributeValue,
-                  type: attributeType,
-                  dataType: newDataType,
-                },
-              ],
-            },
-          };
+    const handleEditSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (inputValue === "") return;
+        if (editIndex !== null) {
+            reactFlow.setNodes((nodes) =>
+                nodes.map((n) => {
+                    const node = n as CustomEntityNode; // Cast to your custom type
+                    if (node.id === id) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                attributes: node.data.attributes.map(
+                                    (attr: Attribute, index: number) =>
+                                        index === editIndex ? { ...attr, label: inputValue } : attr,
+                                ),
+                            },
+                        };
+                    }
+                    return node;
+                }),
+            );
+            setEditIndex(null);
+            setInputValue("");
         }
-        return node;
-      }),
+    };
+
+    const handleNewAttributeSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        reactFlow.setNodes((nodes) =>
+            nodes.map((n) => {
+                const node = n as CustomEntityNode;
+                if (node.id === id) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            attributes: [
+                                ...node.data.attributes,
+                                {
+                                    label: newAttributeValue,
+                                    type: attributeType,
+                                    dataType: newDataType,
+                                },
+                            ],
+                        },
+                    };
+                }
+                return node;
+            }),
+        );
+        setNewAttributeValue("");
+        setNewDataType("");
+    };
+
+    const handleEditClick = (index: number) => {
+        if (!isActive) return;
+        setInputValue(data.attributes[index].label);
+        setEditIndex(index);
+    };
+
+    const handleDeleteClick = (index: number) => {
+        if (!isActive) return;
+        reactFlow.setNodes((nodes) =>
+            nodes.map((n) => {
+                const node = n as CustomEntityNode;
+                if (node.id === id) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            attributes: node.data.attributes.filter(
+                                (_: Attribute, i: number) => i !== index,
+                            ),
+                        },
+                    };
+                }
+                return node;
+            }),
+        );
+    };
+
+    const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setHeaderValue(e.target.value);
+    };
+
+    const handleHeaderSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsEditingHeader(false);
+        reactFlow.setNodes((nodes) =>
+            nodes.map((node) => {
+                if (node.id === id) {
+                    return {
+                        ...node,
+                        data: {
+                            ...node.data,
+                            label: headerValue,
+                        },
+                    };
+                }
+                return node;
+            }),
+        );
+    };
+
+    const [editDataTypeIndex, setEditDataTypeIndex] = useState<number | null>(
+        null,
     );
-    setNewAttributeValue("");
-    setNewDataType("");
-  };
+    const [editedDataTypeValue, setEditedDataTypeValue] = useState("");
 
-  const handleEditClick = (index: number) => {
-    if (!isActive) return;
-    setInputValue(data.attributes[index].label);
-    setEditIndex(index);
-  };
+    const handleEditDataTypeClick = (index: number) => {
+        if (!isActive) return;
+        setEditedDataTypeValue(data.attributes[index].dataType || "string");
+        setEditDataTypeIndex(index);
+    };
 
-  const handleDeleteClick = (index: number) => {
-    if (!isActive) return;
-    reactFlow.setNodes((nodes) =>
-      nodes.map((n) => {
-        const node = n as CustomEntityNode;
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              attributes: node.data.attributes.filter(
-                (_: Attribute, i: number) => i !== index,
-              ),
-            },
-          };
+    const handleEditDataTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditedDataTypeValue(e.target.value);
+    };
+
+    const handleEditDataTypeSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (editDataTypeIndex !== null) {
+            reactFlow.setNodes((nodes) =>
+                nodes.map((n) => {
+                    const node = n as CustomEntityNode;
+                    if (node.id === id) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                attributes: node.data.attributes.map((attr, index) =>
+                                    index === editDataTypeIndex
+                                        ? { ...attr, dataType: editedDataTypeValue }
+                                        : attr,
+                                ),
+                            },
+                        };
+                    }
+                    return node;
+                }),
+            );
+            setEditDataTypeIndex(null);
+            setEditedDataTypeValue("");
         }
-        return node;
-      }),
-    );
-  };
+    };
 
-  const handleHeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setHeaderValue(e.target.value);
-  };
-
-  const handleHeaderSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsEditingHeader(false);
-    reactFlow.setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              label: headerValue,
-            },
-          };
-        }
-        return node;
-      }),
-    );
-  };
-
-  const [editDataTypeIndex, setEditDataTypeIndex] = useState<number | null>(
-    null,
-  );
-  const [editedDataTypeValue, setEditedDataTypeValue] = useState("");
-
-  const handleEditDataTypeClick = (index: number) => {
-    if (!isActive) return;
-    setEditedDataTypeValue(data.attributes[index].dataType || "string");
-    setEditDataTypeIndex(index);
-  };
-
-  const handleEditDataTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditedDataTypeValue(e.target.value);
-  };
-
-  const handleEditDataTypeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editDataTypeIndex !== null) {
-      reactFlow.setNodes((nodes) =>
-        nodes.map((n) => {
-          const node = n as CustomEntityNode;
-          if (node.id === id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                attributes: node.data.attributes.map((attr, index) =>
-                  index === editDataTypeIndex
-                    ? { ...attr, dataType: editedDataTypeValue }
-                    : attr,
-                ),
-              },
-            };
-          }
-          return node;
-        }),
-      );
-      setEditDataTypeIndex(null);
-      setEditedDataTypeValue("");
-    }
-  };
-
-  return (
-    <RelationWrapper
-      className="react-flow__node-default"
-      $isHovered={isHovered}
-      $isActive={isActive}
-    >
-      <Handle id={id} setIsHovered={setIsHovered} isHovered={isHovered} />
-      <Header onClick={() => setIsEditingHeader(true)} $isActive={isActive}>
-        {isEditingHeader ? (
-          <form onSubmit={handleHeaderSubmit}>
-            <HeaderInput
-              value={headerValue}
-              onChange={handleHeaderChange}
-              onBlur={handleHeaderSubmit} // automatically submit
-              autoFocus
-            />
-          </form>
-        ) : (
-          <div style={{ zIndex: 2 }}>{data.label && <>{data.label}</>}</div>
-        )}
-      </Header>
-      <Body>
-        <LeftCol>
-          {data.attributes.map((item, index) => (
-            <AttributeWrapper key={index} $isActive={isActive}>
-              <AttributeItem
-                onClick={() => handleEditClick(index)}
-                $isActive={isActive}
-                $type={item.type}
-              >
-                {editIndex === index ? (
-                  <EditForm onSubmit={handleEditSubmit}>
-                    <EditInput
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      onBlur={() => setEditIndex(null)}
-                      placeholder="attribute"
-                      autoFocus
-                    />
-                  </EditForm>
+    return (
+        <RelationWrapper
+            className="react-flow__node-default"
+            $isHovered={isHovered}
+            $isActive={isActive}
+        >
+            <Handle id={id} setIsHovered={setIsHovered} isHovered={isHovered} />
+            <Header onClick={() => setIsEditingHeader(true)} $isActive={isActive}>
+                {isEditingHeader ? (
+                    <form onSubmit={handleHeaderSubmit}>
+                        <HeaderInput
+                            value={headerValue}
+                            onChange={handleHeaderChange}
+                            onBlur={handleHeaderSubmit} // automatically submit
+                            autoFocus
+                        />
+                    </form>
                 ) : (
-                  <>
-                    {item.label + " "}
-                    {item.type === "primary-key" && <HiOutlineKey />}
-                  </>
+                    <div style={{ zIndex: 2 }}>{data.label && <>{data.label}</>}</div>
                 )}
-              </AttributeItem>
-              <DeleteButton
-                $isActive={isActive}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClick(index);
-                }}
-              >
-                <HiOutlineTrash />
-              </DeleteButton>
-            </AttributeWrapper>
-          ))}
+            </Header>
+            <Body>
+                <LeftCol>
+                    {data.attributes.map((item, index) => (
+                        <AttributeWrapper key={index}>
+                            <AttributeItem
+                                onClick={() => handleEditClick(index)}
+                                $isActive={isActive}
+                                $type={item.type}
+                            >
+                                {editIndex === index ? (
+                                    <EditForm onSubmit={handleEditSubmit}>
+                                        <EditInput
+                                            value={inputValue}
+                                            onChange={handleInputChange}
+                                            onBlur={() => setEditIndex(null)}
+                                            placeholder="attribute"
+                                            autoFocus
+                                        />
+                                    </EditForm>
+                                ) : (
+                                    <>
+                                        {item.label + " "}
+                                        {item.type === "primary-key" && <HiOutlineKey />}
+                                    </>
+                                )}
+                            </AttributeItem>
+                            <DeleteButton
+                                $isActive={isActive}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(index);
+                                }}
+                            >
+                                <HiOutlineTrash />
+                            </DeleteButton>
+                        </AttributeWrapper>
+                    ))}
 
-          {(isActive || data.attributes.length === 0) && (
-            <NewAttributeForm onSubmit={handleNewAttributeSubmit}>
-              <Input
-                value={newAttributeValue}
-                onChange={handleNewAttributeChange}
-                placeholder="attribute"
-              />
-              <SelectMenu
-                attributeType={attributeType}
-                setAttributeType={setAttributeType}
-              />
-            </NewAttributeForm>
-          )}
-        </LeftCol>
-        <RightCol>
-          {data.attributes.map((item, index) => (
-            <DataType
-              key={index}
-              onClick={() => handleEditDataTypeClick(index)}
-              $isActive={isActive}
-            >
-              {editDataTypeIndex === index ? (
-                <EditForm onSubmit={handleEditDataTypeSubmit}>
-                  <EditInput
-                    value={editedDataTypeValue}
-                    onChange={handleEditDataTypeChange}
-                    onBlur={handleEditDataTypeSubmit}
-                    placeholder="data type"
-                    autoFocus
-                  />
-                </EditForm>
-              ) : (
-                <span>{item.dataType || "string"}</span>
-              )}
-            </DataType>
-          ))}
+                    {(isActive || data.attributes.length === 0) && (
+                        <NewAttributeForm onSubmit={handleNewAttributeSubmit}>
+                            <Input
+                                value={newAttributeValue}
+                                onChange={handleNewAttributeChange}
+                                placeholder="attribute"
+                            />
+                            <SelectMenu
+                                attributeType={attributeType}
+                                setAttributeType={setAttributeType}
+                            />
+                        </NewAttributeForm>
+                    )}
+                </LeftCol>
+                <RightCol>
+                    {data.attributes.map((item, index) => (
+                        <DataType
+                            key={index}
+                            onClick={() => handleEditDataTypeClick(index)}
+                            $isActive={isActive}
+                        >
+                            {editDataTypeIndex === index ? (
+                                <EditForm onSubmit={handleEditDataTypeSubmit}>
+                                    <EditInput
+                                        value={editedDataTypeValue}
+                                        onChange={handleEditDataTypeChange}
+                                        onBlur={handleEditDataTypeSubmit}
+                                        placeholder="data type"
+                                        autoFocus
+                                    />
+                                </EditForm>
+                            ) : (
+                                <span>{item.dataType || "string"}</span>
+                            )}
+                        </DataType>
+                    ))}
 
-          {(isActive || data.attributes.length === 0) && (
-            <form
-              onSubmit={handleNewAttributeSubmit}
-              style={{ textAlign: "start" }}
-            >
-              <Input
-                style={{ marginTop: "3px", width: "60px" }}
-                value={newDataType}
-                placeholder="string"
-                onChange={(e) => setNewDataType(e.target.value)}
-              />
-            </form>
-          )}
-        </RightCol>
-      </Body>
-    </RelationWrapper>
-  );
+                    {(isActive || data.attributes.length === 0) && (
+                        <form
+                            onSubmit={handleNewAttributeSubmit}
+                            style={{ textAlign: "start" }}
+                        >
+                            <Input
+                                style={{ marginTop: "3px", width: "60px" }}
+                                value={newDataType}
+                                placeholder="string"
+                                onChange={(e) => setNewDataType(e.target.value)}
+                            />
+                        </form>
+                    )}
+                </RightCol>
+            </Body>
+        </RelationWrapper>
+    );
 }
 
 const RelationWrapper = styled(NodeWrapper)`

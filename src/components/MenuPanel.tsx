@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import logo from "../images/blueprint-logo.svg";
+import logo from "../images/logo.svg";
 import dropIcon from "../images/drop-file.svg";
 import fileIcon from "../images/file.svg";
 import { FiMenu } from "react-icons/fi";
